@@ -24,9 +24,12 @@ sequelize
 
 const authRoutes = require("./routes/auth.routes")
 const mentorRoutes = require("./routes/mentor.routes")
-
+const studentRoutes = require("./routes/student.routes")
+const groupRoutes = require("./routes/group.routes")
 app.use("/api/auth", authRoutes)
 app.use("/api/mentors", mentorRoutes)
+app.use("/api/groups", groupRoutes)
+app.use("/api/students", studentRoutes)
 
 const { swaggerUi, swaggerSpec } = require("./swagger/swagger")
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))

@@ -3,8 +3,8 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const roleMiddleware = require('../middlewares/role.middleware');
 const mentorController = require('../controller/user.controller');
 
-// router.use(authMiddleware);
-// router.use(roleMiddleware('ADMIN'));
+router.use(authMiddleware);
+router.use(roleMiddleware('ADMIN'));
 
 /**
  * @swagger

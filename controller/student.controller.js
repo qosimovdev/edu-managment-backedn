@@ -2,9 +2,9 @@ const { Student, Group, User } = require('../model');
 
 exports.createStudent = async (req, res) => {
     try {
-        const { fullName, phone, groupId, joinedDate } = req.body;
+        const { fullName, phone, groupId, balance, joinedDate } = req.body;
         if (!fullName || !phone || !groupId) {
-            return res.status(400).json({ message: 'fullName, phone va groupId required' });
+            return res.status(400).json({ message: 'fullName, phone, groupId required' });
         }
         const group = await Group.findByPk(groupId);
         if (!group) return res.status(404).json({ message: 'Group topilmadi' });
@@ -14,7 +14,7 @@ exports.createStudent = async (req, res) => {
             groupId,
             joinedDate: joinedDate || new Date(),
             status: 'active',
-            balance: 0
+            balance: balance || 0
         });
         res.status(201).json({ message: 'Student yaratildi', student });
     } catch (err) {

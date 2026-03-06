@@ -4,9 +4,7 @@ const { Op } = Sequelize;
 exports.getDashboard = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-
         let groups;
-
         if (req.user.role === 'ADMIN') {
             groups = await Group.findAll({
                 include: [
@@ -23,41 +21,63 @@ exports.getDashboard = async (req, res) => {
                 ]
             });
         }
+        const summary = await Promise.all(
+            groups.map(async (group) => {
+                const studentIds = group.students.map((s) => s.id);
 
-        const summary = await Promise.all(groups.map(async (group) => {
-            const studentIds = group.students.map(s => s.id);
+                if (!studentIds.length) {
+                    return {
+                        groupId: group.id,
+                        groupName: group.name,
+                        mentor: group.mentor,
+                        studentCount: 0,
+                        totalPayments: 0,
+                        attendancePercentage: 0,
+                    };
+                }
 
-            // Payment filter by date
-            const paymentWhere = { studentId: { [Op.in]: studentIds } };
-            if (startDate && endDate) {
-                paymentWhere.paymentDate = { [Op.between]: [startDate, endDate] };
-            }
+                // Payment
+                const paymentWhere = { studentId: { [Op.in]: studentIds } };
+                if (startDate && endDate) {
+                    paymentWhere.paymentDate = { [Op.between]: [startDate, endDate] };
+                }
 
-            const payments = await Payment.findAll({ where: paymentWhere, attributes: ['amount'] });
-            const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+                const payments = await Payment.findAll({
+                    where: paymentWhere,
+                    attributes: ["amount"],
+                });
 
-            // Attendance filter by date
-            const attendanceWhere = { studentId: { [Op.in]: studentIds } };
-            if (startDate && endDate) {
-                attendanceWhere.date = { [Op.between]: [startDate, endDate] };
-            }
+                const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
 
-            const attendanceRecords = await Attendance.findAll({ where: attendanceWhere });
-            const presentCount = attendanceRecords.filter(a => a.status === 'present').length;
-            const attendancePercentage = attendanceRecords.length > 0
-                ? ((presentCount / attendanceRecords.length) * 100).toFixed(2)
-                : null;
+                // Attendance
+                const attendanceWhere = { studentId: { [Op.in]: studentIds } };
+                if (startDate && endDate) {
+                    attendanceWhere.date = { [Op.between]: [startDate, endDate] };
+                }
 
-            return {
-                groupId: group.id,
-                groupName: group.name,
-                mentor: group.mentor,
-                studentCount: group.students.length,
-                totalPayments,
-                attendancePercentage
-            };
-        }));
+                const attendanceRecords = await Attendance.findAll({
+                    where: attendanceWhere,
+                });
 
+                const presentCount = attendanceRecords.filter(
+                    (a) => a.status === "present"
+                ).length;
+
+                const attendancePercentage =
+                    attendanceRecords.length > 0
+                        ? ((presentCount / attendanceRecords.length) * 100).toFixed(2)
+                        : 0;
+
+                return {
+                    groupId: group.id,
+                    groupName: group.name,
+                    mentor: group.mentor,
+                    studentCount: group.students.length,
+                    totalPayments,
+                    attendancePercentage,
+                };
+            })
+        );
         res.status(200).json({ summary });
     } catch (err) {
         console.error(err);

@@ -32,6 +32,8 @@ router.use(roleMiddleware('ADMIN'));
  *                 type: string
  *               password:
  *                 type: string
+ *               subject:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Mentor created successfully

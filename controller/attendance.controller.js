@@ -34,7 +34,7 @@ exports.getAttendance = async (req, res) => {
                             {
                                 model: Group,
                                 as: 'group',
-                                attributes: ['id', 'name'], // group nomi keladi
+                                attributes: ['id', 'name'],
                             },
                         ],
                     },
@@ -53,7 +53,7 @@ exports.getAttendance = async (req, res) => {
                                 model: Group,
                                 as: 'group',
                                 attributes: ['id', 'name'],
-                                where: { mentorId: req.user.id }, // MENTOR faqat o‘z guruhini ko‘radi
+                                where: { mentorId: req.user.id },
                             },
                         ],
                     },

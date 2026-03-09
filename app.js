@@ -9,7 +9,6 @@ app.use(cors())
 
 const PORT = process.env.PORT || 5577
 
-
 sequelize
     .sync()
     .then(() => {
@@ -20,7 +19,6 @@ sequelize
         })
     })
     .catch((err) => console.error("DB error: ", err))
-
 
 const authRoutes = require("./routes/auth.routes")
 const mentorRoutes = require("./routes/mentor.routes")

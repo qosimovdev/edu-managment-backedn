@@ -3,9 +3,6 @@ const { Payment, Student } = require('../model');
 exports.createPayment = async (req, res) => {
     try {
         const { studentId, amount, paymentDate, method, note } = req.body;
-        // if (!studentId || !amount) {
-        //     return res.status(400).json({ message: 'studentId va amount required' });
-        // }
         const student = await Student.findByPk(studentId);
         if (!student) return res.status(404).json({ message: 'Student topilmadi' });
         const payment = await Payment.create({ studentId, amount, paymentDate, method, note });

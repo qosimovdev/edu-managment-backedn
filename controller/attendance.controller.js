@@ -26,9 +26,20 @@ exports.getAttendance = async (req, res) => {
         if (req.user.role === 'ADMIN') {
             attendances = await Attendance.findAll({
                 include: [
-                    { model: Student, as: 'student', attributes: ['id', 'fullName'] }
+                    {
+                        model: Student,
+                        as: 'student',
+                        attributes: ['id', 'fullName', 'groupId'],
+                        include: [
+                            {
+                                model: Group,
+                                as: 'group',
+                                attributes: ['id', 'name'], // group nomi keladi
+                            },
+                        ],
+                    },
                 ],
-                order: [['date', 'DESC']]
+                order: [['date', 'DESC']],
             });
         } else if (req.user.role === 'MENTOR') {
             attendances = await Attendance.findAll({
@@ -36,15 +47,18 @@ exports.getAttendance = async (req, res) => {
                     {
                         model: Student,
                         as: 'student',
-                        include: {
-                            model: Group,
-                            as: 'group',
-                            where: { mentorId: req.user.id }
-                        },
-                        attributes: ['id', 'fullName']
-                    }
+                        attributes: ['id', 'fullName', 'groupId'],
+                        include: [
+                            {
+                                model: Group,
+                                as: 'group',
+                                attributes: ['id', 'name'],
+                                where: { mentorId: req.user.id }, // MENTOR faqat o‘z guruhini ko‘radi
+                            },
+                        ],
+                    },
                 ],
-                order: [['date', 'DESC']]
+                order: [['date', 'DESC']],
             });
         }
         res.status(200).json({ attendances });
@@ -52,7 +66,7 @@ exports.getAttendance = async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
-}
+};
 
 exports.updateAttendance = async (req, res) => {
     try {

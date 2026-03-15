@@ -97,3 +97,52 @@ exports.deleteAttendance = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 }
+
+exports.getAttendanceByGroup = async (req, res) => {
+    try {
+        const { groupId, date } = req.query;
+        if (!groupId || !date)
+            return res.status(400).json({ message: "groupId va date required" });
+        const students = await Student.findAll({
+            where: { groupId: parseInt(groupId) },
+            include: [
+                {
+                    model: Attendance,
+                    as: "Attendances",
+                    where: { date },
+                    required: false,
+                },
+                {
+                    model: Group,
+                    as: "group",
+                    attributes: ["id", "name"],
+                },
+            ],
+        });
+        const result = students.map((s) => ({
+            id: s.id,
+            fullName: s.fullName,
+            status: s.Attendances[0]?.status || "present",
+            attendanceId: s.Attendances[0]?.id || null,
+        }));
+
+        res.status(200).json({ students: result });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+exports.bulkSaveAttendance = async (req, res) => {
+    const data = req.body;
+    for (const item of data) {
+        if (item.attendanceId) {
+            await Attendance.update(
+                { status: item.status },
+                { where: { id: item.attendanceId } }
+            );
+        } else {
+            await Attendance.create(item);
+        }
+    }
+    res.json({ message: "Saved" });
+};
